@@ -1,0 +1,115 @@
+#Tasks
+#Find top 5 airlines with the greatest average DEPARTURE_DELAY. Show Airline code (IATA_CODE), Airline Name and average DEPARTURE_DELAY and save the result in another Hive table
+# Hint: You may want to create tables for the data files
+# Hint: Use DESCRIBE command to find out details about Hive entities
+
+#Describe how you would test the script (implemented solution is a great bonus)
+#Answer: If i correctly ubdestood question. To check if hive query works correct we can take sample data (10-20 rows) from flights.csv file or hive table ,
+#calculate manually top5 airlines and then run query using that sample dataset and then compare results 
+
+
+# Hive task inplementation steps
+
+gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/airlines.csv .
+
+gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/flights.csv .
+
+
+hdfs dfs -mkdir -p /databases/flights/data/airlines
+hdfs dfs -mkdir -p /databases/flights/data/flights
+
+hdfs dfs -put airlines.csv /databases/flights/data/airlines
+hdfs dfs -put flights.csv /databases/flights/data/flights
+
+hive
+create database if not exists flights_db;
+
+DROP TABLE IF EXISTS flights_db.airlines;
+CREATE EXTERNAL TABLE IF NOT EXISTS flights_db.airlines
+(iata_code string,
+airline string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/databases/flights/data/airlines/'
+tblproperties ("skip.header.line.count"="1");
+
+DROP TABLE IF EXISTS flights_db.flights;
+CREATE EXTERNAL TABLE IF NOT EXISTS flights_db.flights
+(year  int,
+month  int,
+day  int,
+day_of_week  int,
+airline  string,
+flight_number  int,
+tail_number  string,
+origin_airport  string,
+destination_airport  string,
+scheduled_departure  int,
+departure_time  int,
+departure_delay  int,
+taxi_out  int,
+wheels_off  int,
+scheduled_time  int,
+elapsed_time  int,
+air_time  int,
+distance  int,
+wheels_on  int,
+taxi_in  int,
+scheduled_arrival  int,
+arrival_time  int,
+arrival_delay  int,
+diverted  int,
+cancelled  int,
+cancellation_reason  string,
+air_system_delay  int,
+security_delay  int,
+airline_delay  int,
+late_aircraft_delay  int,
+weather_delay  int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/databases/flights/data/flights/'
+tblproperties ("skip.header.line.count"="1");
+
+hive> show tables in flights_db;
+OK
+airlines
+flights
+Time taken: 0.086 seconds, Fetched: 2 row(s)
+
+use flights_db;
+
+CREATE TABLE IF NOT EXISTS flights_db.top_5_airlines
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/databases/flights/data/top_5_airlines/'
+AS with top_5_airlines as (select airline, sum(departure_delay)/count(1) as avg_departure_delay from flights group by airline order by avg_departure_delay desc limit 5) 
+select a.iata_code as airline_code, a.airline, t.avg_departure_delay 
+  from top_5_airlines t join airlines a on a.iata_code=t.airline;
+
+select * from top_5_airlines order by avg_departure_delay desc;
+
+hive> select * from top_5_airlines order by avg_departure_delay desc;
+Query ID = sapozhnikov_bogdan_gmail_com_20201217181612_6ffb2e66-8968-4a6f-98a4-9638f19ca696
+Total jobs = 1
+Launching Job 1 out of 1
+Status: Running (Executing on YARN cluster with App id application_1608215154387_0007)
+----------------------------------------------------------------------------------------------
+        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+----------------------------------------------------------------------------------------------
+Map 1 .......... container     SUCCEEDED      1          1        0        0       0       0  
+Reducer 2 ...... container     SUCCEEDED      1          1        0        0       0       0  
+----------------------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 6.91 s     
+----------------------------------------------------------------------------------------------
+OK
+NK      Spirit Air Lines        15.68327383944317
+UA      United Air Lines Inc.   14.26220664969373
+F9      Frontier Airlines Inc.  13.27060856928971
+B6      JetBlue Airways 11.333044995656211
+WN      Southwest Airlines Co.  10.450107183471951
+Time taken: 7.505 seconds, Fetched: 5 row(s)
+
