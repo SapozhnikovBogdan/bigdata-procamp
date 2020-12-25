@@ -1,4 +1,4 @@
-##Spark RDD lab steps
+##Spark DF lab steps
 
 gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/flights.csv .
 gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/airports.csv .
