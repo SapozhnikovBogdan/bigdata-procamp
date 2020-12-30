@@ -20,7 +20,9 @@ public class FlightsMapper extends Mapper<LongWritable, Text, AirlineKey, Text> 
             return;
         }
 
+        // GLC: It's better to reuse writables
         AirlineKey airlineKey = new AirlineKey(new Text(codeIATA), AirlineKey.FLIGHT_RECORD);
+        // GLC: Why don't you use IntWritable? It's more efficient
         context.write(airlineKey, new Text(departureDelayStr));
 
     }

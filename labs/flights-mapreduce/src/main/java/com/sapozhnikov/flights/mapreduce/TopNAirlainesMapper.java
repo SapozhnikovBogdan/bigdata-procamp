@@ -67,8 +67,12 @@ public class TopNAirlainesMapper extends Mapper<LongWritable, Text, Text, Double
         Double avgDepDelay = 0.0;
 
         try {
+            // GLC: In which case can it fail?
             airlineName = airlinesHashMap.get(codeIATA);;
         } finally {
+            // GLC: It's impossible airlineName.equals(null) :)
+            // GLC: airlineName.equals("") == airlineName.isEmpty()
+            // GLC: I'd use the code
             airlineName = ((airlineName.equals(null) || airlineName.equals("")) ? "NOT-FOUND" : airlineName);
         }
 
@@ -76,10 +80,12 @@ public class TopNAirlainesMapper extends Mapper<LongWritable, Text, Text, Double
             avgDepDelay = Double.parseDouble(recordFields[1]);
         }
         catch (NumberFormatException | NullPointerException e) {
+            // GLC: Cool usage of MR counters
             context.getCounter(AirlinesRecords.RECORD_MISSED).increment(1);
             return;
         }
 
+        // GLC| What about key collisions? I'd use TreeSet
         topNTreeMap.put(avgDepDelay, codeIATA + ", " + airlineName);
 
         //left only first TOP_N_RECORDS
@@ -95,6 +101,7 @@ public class TopNAirlainesMapper extends Mapper<LongWritable, Text, Text, Double
             double avgDelay = entry.getKey();
             String airline_code_name = entry.getValue();
             context.write(new Text(airline_code_name), new DoubleWritable(avgDelay));
+
             context.getCounter(AirlinesRecords.RECORD_COUNT).increment(1);
         }
     }

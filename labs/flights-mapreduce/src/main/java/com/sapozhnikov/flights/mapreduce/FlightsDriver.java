@@ -50,6 +50,7 @@ public class FlightsDriver extends Configured implements Tool {
         Job jobAgvDelay = Job.getInstance(getConf(), "Avg Departure Delay by Airlines");
         jobAgvDelay.setJarByClass(FlightsDriver.class);
 
+        // GLC| It's worth adding a combiner. It will speed up overall job execution
         jobAgvDelay.setMapperClass(FlightsMapper.class);
         jobAgvDelay.setReducerClass(FlightsReducer.class);
 
@@ -58,6 +59,14 @@ public class FlightsDriver extends Configured implements Tool {
 
         jobAgvDelay.setOutputKeyClass(Text.class);
         jobAgvDelay.setOutputValueClass(DoubleWritable.class);
+
+        // It's worth playing with compression
+        // http://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml
+        // GLC| mapreduce.map.output.compress [false]	Should the outputs of the maps be compressed before being sent across the network. Uses SequenceFile compression.
+        // GLC| mapreduce.map.output.compress.codec[org.apache.hadoop.io.compress.DefaultCodec]	If the map outputs are compressed, how should they be compressed?
+        // GLC| conf.set("mapreduce.map.output.compress", true)
+        // GLC| FileOutputFormat.setCompressOutput();
+        // GLC| FileOutputFormat.setOutputCompressorClass(job, COMP_CLASS.class);
 
         FileInputFormat.addInputPath(jobAgvDelay, new Path(inputFolder));
 
