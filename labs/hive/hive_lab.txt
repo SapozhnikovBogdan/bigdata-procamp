@@ -10,6 +10,8 @@
 
 # Hive task inplementation steps
 
+-- GLC: Usually it is shipped in form of bash + hive scripts
+
 gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/airlines.csv .
 
 gsutil cp gs://globallogic-procamp-bigdata-datasets_bogdan/2015_Flight_Delays_and_Cancellations/flights.csv .
@@ -86,6 +88,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
 LOCATION '/databases/flights/data/top_5_airlines/'
+-- GLC: What about using `avg` instead of `sum(departure_delay)/count(1)``?
 AS with top_5_airlines as (select airline, sum(departure_delay)/count(1) as avg_departure_delay from flights group by airline order by avg_departure_delay desc limit 5) 
 select a.iata_code as airline_code, a.airline, t.avg_departure_delay 
   from top_5_airlines t join airlines a on a.iata_code=t.airline;
@@ -113,3 +116,6 @@ B6      JetBlue Airways 11.333044995656211
 WN      Southwest Airlines Co.  10.450107183471951
 Time taken: 7.505 seconds, Fetched: 5 row(s)
 
+-- GLC: Great job!
+
+-- GLC| Any ideas on general testing solution?
