@@ -15,8 +15,10 @@ public class AirlineMapper extends Mapper<LongWritable, Text, AirlineKey, Text> 
         String codeIATA  = recordFields[0];
         String airline = recordFields[1];
 
+        // GLC: I believe equals should be used ;)
         if (codeIATA == IATA_CODE ) return;
 
+        // GLC: It's better to reuse writables
         AirlineKey airlineKey = new AirlineKey(new Text(codeIATA), AirlineKey.AIRLINE_RECORD);
         context.write(airlineKey, new Text(airline));
 

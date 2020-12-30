@@ -40,6 +40,8 @@ public class TopNAirlainesReducer extends Reducer<Text, DoubleWritable, NullWrit
         }*/;
         for(double key : topNTreeMap.descendingKeySet()){
             output = String.format("%s, %.2f", topNTreeMap.get(key), key);
+            // GLC: No much sense as there is a common counter
+            // GLC: It's better to reuse writables
             context.write(NullWritable.get(), new Text(output));
         }
     }

@@ -22,10 +22,13 @@ public class FlightsMapper extends Mapper<LongWritable, Text, Text, IntWritable>
             departureDelay = Integer.parseInt(recordFields[11]);
         }
         catch (NumberFormatException e) {
+            // GLC: Cool usage of MR counters
             context.getCounter(FlightsRecords.RECORD_MISSED).increment(1);
             return;
         }
+        // GLC: It's better to reuse writables
         context.write(new Text(codeIATA), new IntWritable(departureDelay));
+        // GLC: No much sense as there is a common counter
         context.getCounter(FlightsRecords.RECORD_COUNT).increment(1);
     }
 
